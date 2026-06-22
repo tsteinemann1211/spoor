@@ -1,15 +1,9 @@
-/* Spoor service worker — lets the app open offline and keeps photos
-   you've already seen available without signal (handy in the bush). */
-const SHELL = "spoor-shell-v2";
-const IMGS  = "spoor-imgs-v1";
-const SHELL_FILES = [
-  "./",
-  "index.html",
-  "manifest.json",
-  "icon-180.png",
-  "icon-192.png",
-  "icon-512.png"
-];
+/* Spoor service worker.
+   Network-first for the app shell so new deploys show up immediately,
+   cache-first for Wikipedia photos so seen images work offline in the bush. */
+const SHELL = "spoor-shell-v3";
+const IMGS  = "spoor-imgs-v2";
+const SHELL_FILES = ["./","index.html","manifest.json","icon-180.png","icon-192.png","icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(SHELL).then(c => c.addAll(SHELL_FILES)).then(() => self.skipWaiting()));
@@ -27,7 +21,7 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   const url = new URL(req.url);
 
-  // Wikimedia photos: cache-first, then network (so seen images work offline)
+  // Wikipedia / Wikimedia: cache-first (photos + api results)
   if (url.hostname.endsWith("wikimedia.org") || url.hostname.endsWith("wikipedia.org")) {
     e.respondWith(
       caches.open(IMGS).then(async cache => {
@@ -37,16 +31,20 @@ self.addEventListener("fetch", e => {
           const res = await fetch(req);
           if (res && (res.status === 200 || res.type === "opaque")) cache.put(req, res.clone());
           return res;
-        } catch (err) {
-          return hit || Response.error();
-        }
+        } catch (err) { return hit || Response.error(); }
       })
     );
     return;
   }
 
-  // App shell: cache-first, fall back to network
+  // App shell on our own origin: NETWORK-FIRST so updates always apply
   if (url.origin === location.origin) {
-    e.respondWith(caches.match(req).then(hit => hit || fetch(req)));
+    e.respondWith(
+      fetch(req).then(res => {
+        const copy = res.clone();
+        caches.open(SHELL).then(c => c.put(req, copy)).catch(()=>{});
+        return res;
+      }).catch(() => caches.match(req).then(hit => hit || caches.match("index.html")))
+    );
   }
 });
