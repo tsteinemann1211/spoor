@@ -1,0 +1,16 @@
+{
+  "name": "Spoor — Safari field study",
+  "short_name": "Spoor",
+  "description": "Learn to recognise the wildlife, plants, history and politics of the Okavango Delta, Hwange and the Lower Zambezi.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#15120C",
+  "theme_color": "#15120C",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

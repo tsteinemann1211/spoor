@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Spoor — Safari field study</title>
+<meta name="description" content="Learn to recognise the wildlife, plants, history and politics of the Okavango Delta, Hwange and the Lower Zambezi.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#15120C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spoor">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#15120C; --bg2:#100D08; --surface:#211B12; --surface2:#2B2317; --raise:#352B1B;
+  --line:rgba(240,230,210,.10); --line2:rgba(240,230,210,.18);
+  --ink:#F1E7D2; --muted:#B2A285; --faint:#897B61;
+  --gold:#E7A53A; --amber:#F2C45A; --green:#9CAE57; --green-deep:#7C8C42; --terra:#C75B34;
+  --okv:#4FA98D; --hwa:#E7A53A; --lza:#C75B34;
+  --parch:#E8DAB6; --parch-ink:#372E1D; --parch-line:#cdba8c;
+  --display:'Fraunces',Georgia,serif; --poster:'Oswald',Impact,sans-serif;
+  --body:'Hanken Grotesk',-apple-system,system-ui,sans-serif; --mono:'Space Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#contours{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+.app{max-width:560px;margin:0 auto;min-height:100vh;position:relative;z-index:1;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.screen{display:none;padding:18px 20px 120px;animation:rise .32s cubic-bezier(.2,.7,.2,1)}
+.screen.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+h1{font-family:var(--display);font-weight:600;font-size:32px;line-height:1.04;letter-spacing:-.01em;margin:0}
+h2{font-family:var(--display);font-weight:600;font-size:23px;line-height:1.1;margin:0}
+.sci{font-family:var(--display);font-style:italic;font-weight:500;color:var(--muted)}
+.muted{color:var(--muted)} .tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+
+/* HERO — golden-hour savanna, the thesis */
+.hero-band{position:relative;border-radius:20px;overflow:hidden;margin:6px 0 22px;height:196px;border:1px solid rgba(231,165,58,.22);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.hero-band .scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero-top{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;padding:16px 18px 0}
+.wordmark{font-family:var(--poster);font-weight:700;font-size:46px;letter-spacing:.16em;color:#F7EDD7;line-height:.88;text-shadow:0 2px 16px rgba(0,0,0,.5)}
+.wordmark .est{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:#F1DCB4;font-weight:400;margin-top:9px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.hero-sub{position:absolute;z-index:2;left:18px;bottom:13px;right:18px;font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:#F8E9C9;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+.hero-top .ring small{color:#EAD7AE}
+.ring{flex:0 0 auto;text-align:center}
+.ring .pct{font-family:var(--mono);font-size:13px;fill:#F7EDD7}
+.ring small{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-top:4px}
+
+/* JUST PLAY — follow the tracks */
+.play{position:relative;overflow:hidden;border-radius:20px;border:1px solid rgba(231,165,58,.34);
+  background:linear-gradient(135deg,#3a2a13 0%,#241c10 55%,#1a140c 100%);padding:22px;cursor:pointer;margin:0 0 24px}
+.play:active{transform:scale(.99)}
+.play .tracks{position:absolute;right:-4px;top:-6px;width:150px;height:112px;pointer-events:none}
+.play .lab{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.play h2{font-family:var(--poster);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:31px}
+.play p{margin:6px 0 0;color:var(--muted);font-size:14.5px;max-width:82%}
+.play .go{display:inline-flex;align-items:center;gap:9px;margin-top:15px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+.play .go .arr{width:27px;height:27px;border-radius:50%;background:var(--gold);color:#2a1c08;display:flex;align-items:center;justify-content:center;font-size:14px}
+
+.sectlbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin:0 0 12px;display:flex;align-items:center;gap:10px}
+.sectlbl::after{content:"";flex:1;height:1px;background:var(--line)}
+.menu{display:flex;flex-direction:column;gap:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,border-color .2s}
+.card:active{transform:scale(.985)}
+.card .ix{display:none}
+.card h2{font-family:var(--poster);font-weight:600;text-transform:uppercase;letter-spacing:.03em;font-size:22px;margin-bottom:6px}
+.card p{margin:0;color:var(--muted);font-size:14.5px;max-width:92%}
+.card .meta{display:flex;gap:8px;margin-top:13px;align-items:center;flex-wrap:wrap}
+.card.accent-okv{border-color:rgba(79,169,141,.30)} .card.accent-hwa{border-color:rgba(231,165,58,.30)} .card.accent-lza{border-color:rgba(199,91,52,.30)}
+.card.accent-okv::before,.card.accent-hwa::before,.card.accent-lza::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.card.accent-okv::before{background:var(--okv)} .card.accent-hwa::before{background:var(--hwa)} .card.accent-lza::before{background:var(--lza)}
+.bar{height:5px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:13px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green-deep),var(--green));border-radius:99px;transition:width .5s}
+
+.nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.back{background:var(--surface);border:1px solid var(--line);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.back:active{background:var(--surface2)}
+.nav .title{flex:1}
+.nav h2{font-family:var(--poster);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:21px}
+.nav .title .tag{color:var(--muted);display:block;margin-top:2px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--bg2);border:1px solid var(--line);padding:4px 9px;border-radius:6px}
+.chip .dot{width:6px;height:6px;border-radius:99px;background:var(--muted)}
+.chip.okv .dot{background:var(--okv)} .chip.hwa .dot{background:var(--hwa)} .chip.lza .dot{background:var(--lza)}
+.rarity{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rarity .pips{display:inline-flex;gap:3px}
+.rarity .pips i{width:7px;height:7px;border-radius:99px;background:var(--surface2);border:1px solid var(--line2)}
+.rarity .pips i.on{background:var(--gold);border-color:var(--gold)}
+.rarity.r5 .pips i.on{background:var(--terra);border-color:var(--terra)}
+
+.toolbar{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.search{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:var(--body);font-size:15px;padding:12px 14px}
+.search::placeholder{color:var(--muted)} .search:focus{outline:none;border-color:var(--gold)}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fil{flex:0 0 auto;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:7px 13px;border-radius:99px;cursor:pointer}
+.fil.on{color:#2a1c08;background:var(--gold);border-color:var(--gold)}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.spec{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;position:relative}
+.spec:active{transform:scale(.98)}
+.spec .ph{aspect-ratio:4/3;background:var(--surface2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.spec .ph img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s}
+.spec .ph img.in{opacity:1}
+.spec .ph .ld{position:absolute;font-family:var(--mono);font-size:18px;color:var(--faint);animation:pulseo 1.4s infinite}
+@keyframes pulseo{50%{opacity:.3}}
+.spec .ph.fail{background:radial-gradient(120% 120% at 50% 0,var(--surface2),var(--surface))}
+.spec .ph .silho{font-size:34px;opacity:.55}
+.spec .b{padding:11px 12px 13px}
+.spec .b .nm{font-family:var(--display);font-weight:600;font-size:15.5px;line-height:1.1}
+.spec .b .sci{font-size:11px;display:block;margin-top:2px;line-height:1.2}
+.spec .b .foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.spec .b .rg{display:flex;gap:3px} .spec .b .rg span{width:7px;height:7px;border-radius:99px}
+.spec .b .rp{display:flex;gap:2px} .spec .b .rp i{width:5px;height:5px;border-radius:99px;background:var(--surface2)}
+.spec .b .rp i.on{background:var(--gold)} .spec .b .rp.r5 i.on{background:var(--terra)}
+.mastered-dot{position:absolute;top:9px;left:9px;width:18px;height:18px;border-radius:99px;background:var(--green);color:#1c2208;font-size:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(156,174,87,.22);z-index:2}
+
+.detail .hero{aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:var(--surface2);position:relative;margin-bottom:18px;display:flex;align-items:center;justify-content:center}
+.detail .hero img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s} .detail .hero img.in{opacity:1}
+.detail .hero .silho{font-size:54px;opacity:.5}
+.detail .hero .credit{position:absolute;bottom:8px;right:10px;font-family:var(--mono);font-size:9px;color:rgba(241,231,210,.6);background:rgba(15,13,8,.65);padding:2px 7px;border-radius:99px}
+.detail h1{font-size:30px;margin-bottom:4px} .detail .sci{font-size:16px}
+.detail .row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;align-items:center}
+.statline{display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:14px 0}
+.look{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 12px 12px 0;padding:13px 15px;margin:16px 0}
+.look .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:5px} .look p{margin:0;font-size:15px}
+.factbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px;cursor:pointer;position:relative;min-height:96px;display:flex;flex-direction:column;justify-content:center}
+.factbox .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--green);margin-bottom:7px;display:flex;justify-content:space-between}
+.factbox p{margin:0;font-size:16px;line-height:1.45;transition:opacity .12s}
+
+.q-progress{flex:1;height:5px;background:var(--surface2);border-radius:99px;margin-right:14px;overflow:hidden}
+.q-progress i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .4s}
+.q-score{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.05em}
+.q-img{aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:var(--surface2);position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.q-img img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .45s} .q-img img.in{opacity:1}
+.q-img .ld{font-family:var(--mono);font-size:18px;color:var(--faint);animation:pulseo 1.4s infinite} .q-img .silho{font-size:50px;opacity:.55}
+.q-ask{font-family:var(--display);font-size:20px;text-align:center;margin:14px 0 16px;font-weight:600}
+.q-clue{text-align:center;color:var(--muted);font-size:14.5px;margin:6px 0 16px;padding:0 6px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--surface);border:1px solid var(--line2);border-radius:13px;padding:15px 16px;font-family:var(--body);font-size:16px;color:var(--ink);text-align:left;cursor:pointer;transition:transform .12s,border-color .15s,background .15s;display:flex;align-items:center;gap:11px}
+.opt:active{transform:scale(.99)}
+.opt .ic{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line2);width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.opt.correct{border-color:var(--green);background:rgba(156,174,87,.14)} .opt.correct .ic{border-color:var(--green);color:var(--green)}
+.opt.wrong{border-color:var(--terra);background:rgba(199,91,52,.14)} .opt.wrong .ic{border-color:var(--terra);color:var(--terra)}
+.opt.dim{opacity:.45} .opt:disabled{cursor:default}
+.shake{animation:shake .4s}
+@keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+.pulse{animation:pulse .5s}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(156,174,87,.5)}100%{box-shadow:0 0 0 16px rgba(156,174,87,0)}}
+.reveal{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;animation:rise .3s}
+.reveal .rn{font-family:var(--display);font-weight:600;font-size:19px;display:flex;align-items:center;gap:8px}
+.reveal .rn.ok{color:var(--green)} .reveal .rn.no{color:var(--terra)}
+.reveal .rsci{font-size:13.5px;margin:2px 0 0}
+.reveal .rtags{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 2px;padding-top:12px;border-top:1px solid var(--line)}
+.reveal .rf{margin:11px 0 0;font-size:15px;line-height:1.45}
+.reveal .rf .lab{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:4px}
+
+.btn{display:block;width:100%;background:var(--ink);color:var(--bg);border:none;border-radius:13px;padding:16px;font-family:var(--body);font-weight:600;font-size:16px;cursor:pointer;margin-top:16px}
+.btn:active{transform:scale(.99)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.btn.water{background:var(--gold);color:#2a1c08}
+
+.brief{background:var(--parch);color:var(--parch-ink);border-radius:18px;padding:22px 20px;margin-bottom:16px;
+  background-image:repeating-linear-gradient(var(--parch) 0 27px,var(--parch-line) 27px 28px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.3)}
+.brief .flag{font-size:32px;line-height:1}
+.brief h1{font-family:var(--poster);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--parch-ink);font-size:32px;margin:8px 0 2px}
+.brief .park{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6b5d3e;margin-bottom:2px}
+.brief .lede{font-size:15px;color:#3b3a30;margin:10px 0 0}
+.brief .quick{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:16px 0 4px;padding:14px 0 0;border-top:1px solid var(--parch-line)}
+.brief .quick .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#7a6c49;display:block}
+.brief .quick .v{font-size:14px;font-weight:600;color:var(--parch-ink)}
+.sect{margin:18px 0}
+.sect .sh{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#7a6c49;margin:0 0 9px;display:flex;align-items:center;gap:8px}
+.sect .sh::after{content:"";flex:1;height:1px;background:var(--parch-line)}
+.sect ul{list-style:none;margin:0;padding:0}
+.sect li{position:relative;padding:6px 0 6px 22px;font-size:15px;line-height:1.5;color:#33322a;border-bottom:1px dotted rgba(0,0,0,.10)}
+.sect li:last-child{border-bottom:none}
+.sect li::before{content:"";position:absolute;left:4px;top:13px;width:6px;height:6px;border-radius:99px;background:#b0792c}
+
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
+.result{text-align:center;padding-top:30px}
+.result .big{font-family:var(--display);font-size:64px;font-weight:700;line-height:1;color:var(--gold)}
+.result .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.result h2{margin:22px 0 6px} .result p{color:var(--muted);margin:0 auto;max-width:300px}
+
+.modal{position:fixed;inset:0;background:rgba(12,10,6,.76);display:none;align-items:center;justify-content:center;padding:24px;z-index:50;backdrop-filter:blur(3px)}
+.modal.on{display:flex}
+.modal .box{background:var(--surface);border:1px solid var(--line2);border-radius:18px;padding:22px;max-width:340px;width:100%}
+.modal h2{margin-bottom:6px} .modal p{color:var(--muted);font-size:14px;margin:0 0 16px}
+.modal input{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:11px;color:var(--ink);font-family:var(--body);font-size:16px;padding:13px}
+.modal input:focus{outline:none;border-color:var(--gold)}
+.foot{text-align:center;margin-top:26px}
+.foot button{background:none;border:none;color:var(--faint);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:8px}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14.5px}
+</style>
+</head>
+<body>
+<svg id="contours" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#E7A53A" stroke-opacity="0.045" stroke-width="1.2">
+    <path d="M-20 120 C 80 90, 150 170, 230 130 S 380 110, 440 160"/>
+    <path d="M-20 150 C 80 120, 160 200, 240 160 S 390 140, 440 190"/>
+    <path d="M-20 300 C 90 270, 140 350, 250 320 S 380 300, 440 350"/>
+    <path d="M-20 330 C 90 300, 150 380, 255 350 S 390 330, 440 380"/>
+    <path d="M-20 520 C 70 490, 160 560, 250 520 S 380 500, 440 540"/>
+    <path d="M-20 660 C 100 630, 150 700, 260 670 S 380 650, 440 690"/>
+  </g>
+</svg>
+<div id="grain"></div>
+<div class="app">
+
+  <!-- HOME -->
+  <section id="home" class="screen active">
+    <div class="hero-band">
+      <svg class="scene" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#19140D"/><stop offset="0.4" stop-color="#5A3318"/>
+            <stop offset="0.68" stop-color="#9B4E22"/><stop offset="0.85" stop-color="#CE782D"/><stop offset="1" stop-color="#E89A38"/>
+          </linearGradient>
+          <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#FBD988"/><stop offset="0.55" stop-color="#F3B14A"/><stop offset="1" stop-color="#E89A38"/>
+          </radialGradient>
+        </defs>
+        <rect width="400" height="200" fill="url(#sky)"/>
+        <circle cx="106" cy="150" r="40" fill="url(#sun)"/>
+        <path d="M0,152 Q70,138 130,150 T260,148 T400,150 L400,200 L0,200 Z" fill="#85481F" opacity="0.92"/>
+        <path d="M0,167 Q90,151 180,165 T380,163 L400,166 L400,200 L0,200 Z" fill="#37230F"/>
+        <g fill="#120D07">
+          <path d="M322,182 C322,166 319,150 326,137 C329,150 331,166 333,182 Z"/>
+          <path d="M327,150 C311,150 300,146 291,139 C302,148 313,152 327,154 Z"/>
+          <path d="M327,150 C343,150 355,144 364,137 C353,147 341,152 327,153 Z"/>
+          <path d="M327,142 C318,142 309,140 302,135 C311,141 319,143 327,144 Z"/>
+          <ellipse cx="328" cy="133" rx="45" ry="9"/><ellipse cx="316" cy="129" rx="21" ry="7"/><ellipse cx="343" cy="130" rx="18" ry="6"/>
+        </g>
+        <g fill="#120D07"><path d="M64,182 C64,172 63,162 67,153 C69,162 70,172 71,182 Z"/><ellipse cx="67" cy="151" rx="24" ry="6.5"/><ellipse cx="56" cy="148" rx="11" ry="4.5"/></g>
+        <rect y="182" width="400" height="18" fill="#15120C"/>
+        <g stroke="#EEC07A" stroke-width="1.6" fill="none" opacity="0.65" stroke-linecap="round">
+          <path d="M150,50 q5,-5 10,0 q5,-5 10,0"/><path d="M176,62 q4,-4 8,0 q4,-4 8,0"/>
+        </g>
+      </svg>
+      <div class="hero-top">
+        <div class="wordmark">SPOOR<span class="est">Field study · Sept · 3 weeks</span></div>
+        <div class="ring" id="ring"></div>
+      </div>
+      <div class="hero-sub">Okavango Delta · Hwange · Lower Zambezi</div>
+    </div>
+
+    <div class="play" onclick="App.justPlay()">
+      <svg class="tracks" viewBox="0 0 140 110" aria-hidden="true"><g transform="translate(20,86) scale(0.9)" fill="#E7A53A" fill-opacity="0.06"><ellipse cx="0" cy="3" rx="6.5" ry="5.2"/><circle cx="-5.4" cy="-4.2" r="2.5"/><circle cx="-1.9" cy="-7" r="2.7"/><circle cx="1.9" cy="-7" r="2.7"/><circle cx="5.4" cy="-4.2" r="2.5"/></g><g transform="translate(50,68) scale(1.0)" fill="#E7A53A" fill-opacity="0.09"><ellipse cx="0" cy="3" rx="6.5" ry="5.2"/><circle cx="-5.4" cy="-4.2" r="2.5"/><circle cx="-1.9" cy="-7" r="2.7"/><circle cx="1.9" cy="-7" r="2.7"/><circle cx="5.4" cy="-4.2" r="2.5"/></g><g transform="translate(82,48) scale(1.1)" fill="#E7A53A" fill-opacity="0.13"><ellipse cx="0" cy="3" rx="6.5" ry="5.2"/><circle cx="-5.4" cy="-4.2" r="2.5"/><circle cx="-1.9" cy="-7" r="2.7"/><circle cx="1.9" cy="-7" r="2.7"/><circle cx="5.4" cy="-4.2" r="2.5"/></g><g transform="translate(112,28) scale(1.2)" fill="#E7A53A" fill-opacity="0.18"><ellipse cx="0" cy="3" rx="6.5" ry="5.2"/><circle cx="-5.4" cy="-4.2" r="2.5"/><circle cx="-1.9" cy="-7" r="2.7"/><circle cx="1.9" cy="-7" r="2.7"/><circle cx="5.4" cy="-4.2" r="2.5"/></g></svg>
+      <div class="lab">Just play</div>
+      <h2 id="playTitle">Drop me in</h2>
+      <p id="playSub">One tap, a random round — spot an animal or test a country. No deciding.</p>
+      <div class="go"><span class="arr">→</span> <span id="playGo">follow the tracks</span></div>
+    </div>
+
+    <p class="sectlbl">Study deliberately</p>
+    <div class="menu">
+      <div class="card accent-okv" onclick="App.openGuide()">
+        <h2>Field guide</h2>
+        <p>Every animal you'll meet — photo, what to look for, where it lives, how rare.</p>
+        <div class="meta"><span class="tag muted" id="guideCount">— species</span></div>
+      </div>
+      <div class="card accent-hwa" onclick="App.startSpot()">
+        <h2>Spot it</h2>
+        <p>Name the animal from a photo. Misses come back more often until they stick.</p>
+        <div class="bar"><i id="masterBar" style="width:0%"></i></div>
+        <div class="meta"><span class="tag muted" id="masterCount">0 mastered</span></div>
+      </div>
+      <div class="card accent-lza" onclick="App.show('dests')">
+        <h2>Destinations</h2>
+        <p>Deep briefings and quizzes on the three countries and parks — far past the basics.</p>
+        <div class="meta"><span class="tag muted">3 places</span></div>
+      </div>
+    </div>
+    <div class="foot"><button onclick="App.openName()">Edit name</button> · <button onclick="App.resetAll()">Reset progress</button></div>
+  </section>
+
+  <!-- FIELD GUIDE -->
+  <section id="guide" class="screen">
+    <div class="nav">
+      <button class="back" onclick="App.show('home')">‹</button>
+      <div class="title"><h2>Field guide</h2><span class="tag" id="guideSub">tap any card</span></div>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="search" placeholder="Search a name…" oninput="App.renderGuide()">
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="guideEmpty" style="display:none">No match. Try another name.</div>
+  </section>
+
+  <!-- DETAIL -->
+  <section id="detail" class="screen detail">
+    <div class="nav">
+      <button class="back" onclick="App.show('guide')">‹</button>
+      <div class="title"><h2 id="dGuideTitle">Species</h2><span class="tag muted">field guide</span></div>
+    </div>
+    <div id="detailBody"></div>
+  </section>
+
+  <!-- SPOT QUIZ -->
+  <section id="spot" class="screen">
+    <div class="nav">
+      <button class="back" onclick="App.confirmQuit()">‹</button>
+      <div class="q-progress"><i id="spotProg" style="width:0%"></i></div>
+      <span class="q-score" id="spotScore">0</span>
+    </div>
+    <div id="spotBody"></div>
+  </section>
+
+  <!-- DESTINATIONS MENU -->
+  <section id="dests" class="screen">
+    <div class="nav">
+      <button class="back" onclick="App.show('home')">‹</button>
+      <div class="title"><h2>Destinations</h2><span class="tag muted">briefing + quiz</span></div>
+    </div>
+    <div class="menu" id="destMenu"></div>
+  </section>
+
+  <!-- BRIEFING -->
+  <section id="brief" class="screen">
+    <div class="nav">
+      <button class="back" onclick="App.show('dests')">‹</button>
+      <div class="title"><h2 id="briefNav">Briefing</h2><span class="tag muted">field notes</span></div>
+    </div>
+    <div id="briefBody"></div>
+  </section>
+
+  <!-- DEST QUIZ -->
+  <section id="dquiz" class="screen">
+    <div class="nav">
+      <button class="back" onclick="App.confirmQuit('dests')">‹</button>
+      <div class="q-progress"><i id="dProg" style="width:0%"></i></div>
+      <span class="q-score" id="dScore">0</span>
+    </div>
+    <div id="dBody"></div>
+  </section>
+
+</div>
+
+<div class="modal" id="nameModal">
+  <div class="box">
+    <h2>What should I call you?</h2>
+    <p>Just so the journal feels yours. Stays on this device only.</p>
+    <input id="nameInput" placeholder="Lea" maxlength="20">
+    <button class="btn water" onclick="App.saveName()" style="margin-top:14px">Save</button>
+  </div>
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+const SPECIES = [{"id":"lion","n":"Lion","s":"Panthera leo","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Lion","l":"Tawny coat; males have manes. In prides, often flat-out asleep by day.","f":["Africa's only truly social cat — prides defend territory together.","A male's roar can carry up to 8 km across the savanna.","Lionesses do most of the hunting; males guard pride and cubs.","They rest up to 20 hours a day to conserve energy.","A pride may be 3 to 30 lions, mostly related females."]},{"id":"leopard","n":"Leopard","s":"Panthera pardus","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Leopard","l":"Rosettes, not solid spots. Solitary; often draped along a tree branch.","f":["Hauls kills up trees to keep them from lions and hyenas.","The most solitary and elusive of Africa's big cats.","Every leopard's rosette pattern is unique, like a fingerprint.","Hunts mostly at night and can take prey heavier than itself.","Thrives near people yet is rarely seen — a master of stealth."]},{"id":"cheetah","n":"Cheetah","s":"Acinonyx jubatus","c":"mammal","r":["OKV","HWA"],"rar":4,"w":"Cheetah","l":"Slender; solid round spots; black 'tear' lines running down the face.","f":["Fastest land animal — 0 to 100 km/h in about three seconds.","Hunts by day to avoid stronger lions and hyenas.","Non-retractable claws grip the ground like sprinter's spikes.","The black tear marks may cut glare, like an athlete's eye-black.","Can't roar — it chirps, purrs and yelps instead."]},{"id":"wilddog","n":"African wild dog","s":"Lycaon pictus","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"African wild dog","l":"Mottled tan-black-white coat; big round ears; white tail tip. In packs.","f":["One of Africa's most endangered carnivores.","Packs hunt with about 80% success — far above lions.","Every coat pattern is unique; the big ears shed heat.","Pack members 'sneeze' to vote on whether to start a hunt.","Also called the painted wolf for its blotchy coat."]},{"id":"spottedhyena","n":"Spotted hyena","s":"Crocuta crocuta","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Spotted hyena","l":"Sloping back, spotted coat, rounded ears. Whooping calls at night.","f":["A skilled hunter, not just a scavenger — kills most of its food.","Bone-crushing jaws are among the strongest of any mammal.","Clans are led by females, who outrank every male.","The eerie 'laugh' signals stress or excitement, not humour.","Can digest bone, hide and hoof that other predators leave."]},{"id":"brownhyena","n":"Brown hyena","s":"Parahyaena brunnea","c":"mammal","r":["OKV"],"rar":5,"w":"Brown hyena","l":"Shaggy dark coat, pale mane, pointed ears. Shy and nocturnal.","f":["The shaggiest hyena — a shy Kalahari-fringe scavenger.","Largely solitary, unlike the social spotted hyena.","Finds most food by an exceptional sense of smell.","Will cache surplus food to return to later.","Rarely seen, so a real prize in the Okavango."]},{"id":"bbjackal","n":"Black-backed jackal","s":"Lupulella mesomelas","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Black-backed jackal","l":"Reddish with a dark 'saddle' down the back; sharp pointed muzzle.","f":["Named for the dark saddle running down its back.","Pairs are monogamous and hold a territory for life.","An opportunist — eats fruit, insects, scraps and small prey.","Often trails big cats to scavenge the leftovers.","Its yipping call is a classic sound of the African night."]},{"id":"ssjackal","n":"Side-striped jackal","s":"Lupulella adusta","c":"mammal","r":["HWA","LZA"],"rar":3,"w":"Side-striped jackal","l":"Greyer than the black-backed; pale stripe on the flank; white tail tip.","f":["Greyer and shyer than the black-backed jackal.","Prefers wetter woodland near the Zambezi.","The whitish tail tip is a quick way to tell it apart.","More of a forager than a hunter.","Often quiet and easily overlooked."]},{"id":"bateared","n":"Bat-eared fox","s":"Otocyon megalotis","c":"mammal","r":["OKV"],"rar":4,"w":"Bat-eared fox","l":"Small; enormous ears; black mask and black legs.","f":["Those huge ears detect insects moving underground.","Eats mainly termites and dung beetles.","Can have up to 48 teeth — more than most land mammals.","Most active at dawn and dusk; pairs are devoted.","Will follow a column of harvester termites for hours."]},{"id":"honeybadger","n":"Honey badger","s":"Mellivora capensis","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"Honey badger","l":"Low-slung; black body with a grey-white back. Bold and fearless.","f":["Famously fearless — will face lions and venomous snakes.","Loose, thick skin lets it twist free of almost any grip.","Clever enough to use tools and open latches.","Raids beehives for larvae, shrugging off the stings.","Pound for pound, one of Africa's toughest animals."]},{"id":"civet","n":"African civet","s":"Civettictis civetta","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"African civet","l":"Cat-like but larger; blotchy coat, black mask, crest along the spine.","f":["A nocturnal omnivore with a raccoon-like masked face.","Marks territory with musk once prized in perfume-making.","Raises a spiny crest to look bigger when threatened.","Eats almost anything, even toxic millipedes.","Leaves its droppings in regular 'latrines'."]},{"id":"genet","n":"Small-spotted genet","s":"Genetta genetta","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Common genet","l":"Slender and cat-like; spotted body; very long ringed tail.","f":["Looks like a cat but is related to mongooses and civets.","Semi-retractable claws make it a superb climber.","Strictly nocturnal; often hunts along riverbanks.","The long ringed tail can be as long as its body.","Frequently seen in camp rafters after dark."]},{"id":"serval","n":"Serval","s":"Leptailurus serval","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"Serval","l":"Tall and long-legged; big ears; black-spotted golden coat.","f":["Longest legs of any cat relative to its body size.","Pounces high to crash down on rodents in tall grass.","Giant ears pinpoint prey by sound alone.","Loves wetland edges — good odds in the delta.","Can catch birds by leaping straight up to swat them."]},{"id":"caracal","n":"Caracal","s":"Caracal caracal","c":"mammal","r":["OKV","HWA","LZA"],"rar":5,"w":"Caracal","l":"Reddish-tan; powerful build; long black tufts on the ear tips.","f":["Black ear tufts may signal mood or aid camouflage.","Can leap 3 m to swat birds out of the air.","Secretive and mostly nocturnal — a rare sighting.","Once trained for hunting in ancient Persia and India.","Sometimes called the African lynx, though unrelated."]},{"id":"wildcat","n":"African wildcat","s":"Felis lybica","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"African wildcat","l":"Looks like a tabby; sandy coat, reddish ears, faintly banded legs.","f":["The wild ancestor of every house cat.","Reddish backs to the ears help tell it from a stray.","A solitary, nocturnal hunter of rodents and birds.","Domesticated in the Near East about 10,000 years ago.","Sits more upright than a domestic cat, with longer legs."]},{"id":"bandedmongoose","n":"Banded mongoose","s":"Mungos mungo","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Banded mongoose","l":"Grey-brown with dark bands across the back. Moves in busy packs.","f":["Lives in noisy packs of up to 40 members.","Dark bands across the back give it its name.","Forages together, chattering constantly to stay in touch.","Will mob snakes and raptors as a group.","Often dens in old termite mounds."]},{"id":"dwarfmongoose","n":"Dwarf mongoose","s":"Helogale parvula","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Common dwarf mongoose","l":"Tiny, glossy dark brown. Africa's smallest carnivore.","f":["Africa's smallest carnivore — it fits in your hand.","Lives in old termite mounds in cooperative groups.","Posts sentries to watch for hawks while others feed.","Has a feeding partnership with hornbills.","The dominant female leads the whole group."]},{"id":"slendermongoose","n":"Slender mongoose","s":"Galerella sanguinea","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Slender mongoose","l":"Slim; reddish to near-black; black-tipped tail held up when running.","f":["Often solitary, unlike its banded cousins.","Holds its black-tipped tail up like a flag when fleeing.","An agile climber that raids nests for eggs.","Coat colour ranges from red to almost black.","Frequently darts across roads in front of vehicles."]},{"id":"aardwolf","n":"Aardwolf","s":"Proteles cristatus","c":"mammal","r":["OKV","HWA"],"rar":5,"w":"Aardwolf","l":"Small striped hyena-relative; slender body; bushy mane along the back.","f":["A shy insectivore, not a hunter, despite its hyena looks.","Can eat up to 250,000 termites in a single night.","Raises its mane to look bigger when alarmed.","A sticky tongue laps termites straight off the ground.","Strictly nocturnal and rarely seen."]},{"id":"elephant","n":"African elephant","s":"Loxodonta africana","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"African bush elephant","l":"Huge; large fan-shaped ears; both sexes can carry tusks.","f":["The largest land animal on Earth.","Hwange holds one of Africa's biggest elephant populations.","Its ear shape echoes the continent; flapping cools the blood.","Herds are led by the oldest female, the matriarch.","Can detect water and rumble messages over long distances."]},{"id":"hippo","n":"Hippopotamus","s":"Hippopotamus amphibius","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Hippopotamus","l":"Barrel-bodied; in water by day, grazing on land at night.","f":["Among Africa's most dangerous animals to people.","Secretes a red 'sweat' that works as sunscreen.","Can't truly swim — it walks and pushes off the riverbed.","Grazes on land at night, returning to water by dawn.","A wide yawn is a threat display, not a sign of sleepiness."]},{"id":"whiterhino","n":"White rhino","s":"Ceratotherium simum","c":"mammal","r":["OKV","HWA"],"rar":4,"w":"White rhinoceros","l":"Huge; square, wide lip; head carried low. A grazer.","f":["'White' is a mistranslation of 'wide' — its square lip.","The largest rhino, grazing grass with that broad mouth.","More social and placid than the black rhino.","Poaching for horn keeps its numbers fragile.","Often rests in mud wallows to cool and shed parasites."]},{"id":"blackrhino","n":"Black rhino","s":"Diceros bicornis","c":"mammal","r":["HWA"],"rar":5,"w":"Black rhinoceros","l":"Smaller; hooked, prehensile lip; head held higher. A browser.","f":["Its hooked lip grips leaves and twigs — a browser.","More solitary and short-tempered than the white rhino.","Critically endangered after decades of poaching.","Can run surprisingly fast for its bulk.","Neither rhino is actually black or white in colour."]},{"id":"buffalo","n":"Cape buffalo","s":"Syncerus caffer","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"African buffalo","l":"Massive black ox; fused horn 'boss' across the forehead.","f":["One of the 'Big Five' and notoriously unpredictable.","Old lone bulls are nicknamed 'dagga boys'.","Herds will mob lions to rescue a captured member.","The horn 'boss' is thickest and hardest in mature bulls.","A herd can number several hundred animals."]},{"id":"giraffe","n":"Giraffe","s":"Giraffa giraffa","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Giraffe","l":"Unmistakable; jagged tan patches; immensely long neck.","f":["The tallest land animal — up to 5.5 m.","Has the same number of neck bones as a human: seven.","Its tongue is about 45 cm long and dark to resist sunburn.","Drinks rarely, getting most moisture from leaves.","Must splay its legs awkwardly to reach water."]},{"id":"zebra","n":"Plains zebra","s":"Equus quagga","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Plains zebra","l":"Bold black-and-white stripes, often with faint brown 'shadow' stripes.","f":["Every zebra's stripe pattern is unique.","Stripes may deter biting flies and confuse predators.","Often grazes with wildebeest for extra safety.","Foals can stand and run within an hour of birth.","Family groups are led by a single stallion."]},{"id":"impala","n":"Impala","s":"Aepyceros melampus","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Impala","l":"Sleek rufous; black 'M' on the rump; only males have lyre-shaped horns.","f":["The 'M' on its rump earns the nickname 'McDonald's of the bush'.","Can leap 3 m high and 10 m long to escape.","Both grazes and browses — hence its abundance.","Bachelor herds and harems split during the rut.","The most common antelope you'll see, by far."]},{"id":"kudu","n":"Greater kudu","s":"Tragelaphus strepsiceros","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Greater kudu","l":"Grey-brown; thin white side stripes; males' huge spiral horns.","f":["Bulls carry magnificent corkscrew horns up to 1.8 m.","Thin white stripes break up its outline in the bush.","A browser that melts into thickets when alarmed.","Nicknamed 'the grey ghost' for its quiet vanishings.","Leaps fences and obstacles with surprising ease."]},{"id":"sable","n":"Sable antelope","s":"Hippotragus niger","c":"mammal","r":["HWA","LZA"],"rar":3,"w":"Sable antelope","l":"Striking black (males) or chestnut; long swept-back horns; white face.","f":["Bulls turn jet-black with age; both sexes have swept horns.","Will fight off lions back-to-back using those horns.","Among the most prized sightings in Hwange.","Lives in herds across open woodland and grassland.","Considered by many the most handsome of all antelope."]},{"id":"roan","n":"Roan antelope","s":"Hippotragus equinus","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"Roan antelope","l":"Large and sandy-roan; black-and-white face mask; backward-curving horns.","f":["One of Africa's largest antelope, after the eland.","The black-and-white 'clown' face mask is distinctive.","Needs space and clean water — sensitive to crowding.","Less common, so always a rewarding find.","Both sexes carry ringed, scimitar-shaped horns."]},{"id":"waterbuck","n":"Waterbuck","s":"Kobus ellipsiprymnus","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Waterbuck","l":"Shaggy grey-brown; a clear white ring on the rump. Always near water.","f":["The white ring on the rump looks like a painted target.","An oily, musky coat may make it unappealing to predators.","It never strays far from water.","Only males grow the long, forward-curved ridged horns.","That distinctive 'toilet seat' rump is unmistakable."]},{"id":"lechwe","n":"Red lechwe","s":"Kobus leche","c":"mammal","r":["OKV"],"rar":2,"w":"Lechwe","l":"Rufous coat, blackish lower legs; splayed hooves. Out in floodplain water.","f":["The Okavango's signature antelope, built for floodplains.","Splayed hooves and water-shedding legs suit marshy ground.","Bounds through knee-deep water to escape predators.","Gathers in big herds on the delta's seasonal floods.","Will plunge into deep water and even swim when pressed."]},{"id":"wildebeest","n":"Blue wildebeest","s":"Connochaetes taurinus","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Blue wildebeest","l":"Dark slate-grey; shaggy mane and beard; cow-like curved horns.","f":["Nicknamed the 'clown of the savanna' for its antics.","Often grazes with zebra, sharing lookout duty.","Calves can run with the herd minutes after birth.","Constant grunting keeps the herd together.","Its front-heavy build gives that rocking-horse gallop."]},{"id":"tsessebe","n":"Tsessebe","s":"Damaliscus lunatus","c":"mammal","r":["OKV","HWA"],"rar":3,"w":"Tsessebe","l":"Reddish-brown with darker thigh patches; sloping back; ringed horns.","f":["The fastest antelope in Africa over distance.","A sloping back and dark thigh patches are good clues.","Bulls stand on termite mounds to survey their turf.","Closely related to the topi of East Africa.","Often the sentinel that spots danger first."]},{"id":"eland","n":"Common eland","s":"Taurotragus oryx","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Common eland","l":"The largest antelope; ox-like build; tight spiral horns; throat dewlap.","f":["The world's largest antelope — bulls near a tonne.","Despite the bulk, it can clear a 2 m fence from standing.","Its knees make a distinctive clicking sound as it walks.","Both sexes carry tightly spiralled horns.","Surprisingly shy for such a massive animal."]},{"id":"bushbuck","n":"Bushbuck","s":"Tragelaphus sylvaticus","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Bushbuck","l":"Rich brown with white spots and stripes. Shy, near rivers and thickets.","f":["Solitary and shy, lurking in riverine thickets.","White spots and stripes vary between individuals.","Barks like a dog when startled.","Only males grow the short, nearly straight spiral horns.","Usually seen alone, slipping quietly into cover."]},{"id":"sitatunga","n":"Sitatunga","s":"Tragelaphus spekii","c":"mammal","r":["OKV"],"rar":5,"w":"Sitatunga","l":"Shaggy; very long splayed hooves. Hidden in papyrus swamps.","f":["A swamp-dwelling antelope rarely seen on dry land.","Extremely long hooves spread its weight on floating reeds.","Will submerge with only its nostrils showing to hide.","A true Okavango specialty for patient watchers.","Moves through papyrus channels few other animals can."]},{"id":"reedbuck","n":"Southern reedbuck","s":"Redunca arundinum","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Southern reedbuck","l":"Greyish-fawn; forward-curving horns (males). Whistles when it flees.","f":["Whistles sharply and bounds off when disturbed.","Sticks close to reedbeds and tall, wet grass.","A dark bare patch sits below each ear.","Usually seen singly or in pairs, not big herds.","Has a distinctive rocking, bouncing run."]},{"id":"steenbok","n":"Steenbok","s":"Raphicerus campestris","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Steenbok","l":"Tiny and rufous; big ears; huge eyes; males' short straight horns.","f":["A dainty, big-eared dwarf antelope of open ground.","Often freezes flat before darting away.","Buries its droppings to hide from predators.","Usually seen alone, sprinting in zig-zags.","Lives without drinking, getting moisture from plants."]},{"id":"duiker","n":"Common duiker","s":"Sylvicapra grimmia","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Common duiker","l":"Small grey-brown; a tuft between the ears; dark stripe down the nose.","f":["'Duiker' means 'diver' — it dives into cover when alarmed.","A crest of hair sits between its short horns.","Browses leaves and fruit, and even small animals.","The most widespread small antelope in the region.","Active at dawn, dusk and through the night."]},{"id":"warthog","n":"Warthog","s":"Phacochoerus africanus","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Common warthog","l":"Grey pig; facial 'warts'; curved tusks; tail held straight up when running.","f":["Runs with its tail straight up like an antenna.","Kneels on padded wrists to root and graze.","Backs into burrows so its tusks face any intruder.","The 'warts' are protective pads, not real warts.","Pumbaa from The Lion King is a warthog."]},{"id":"baboon","n":"Chacma baboon","s":"Papio ursinus","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Chacma baboon","l":"Large grey-brown monkey; dog-like muzzle; tail kinked at the base.","f":["Lives in troops with a strict social hierarchy.","The largest baboon — bold and highly adaptable.","Posts sentinels and barks alarms at leopards.","Will raid camps, so keep your tent zipped.","Grooming keeps the troop's social bonds strong."]},{"id":"vervet","n":"Vervet monkey","s":"Chlorocebus pygerythrus","c":"mammal","r":["OKV","HWA","LZA"],"rar":1,"w":"Vervet monkey","l":"Small grey monkey; black face framed by a white brow band.","f":["Uses different alarm calls for snakes, eagles and leopards.","A quick, cheeky raider of unattended food.","Males are recognisable by their vivid blue colouring.","Troops groom constantly to keep social bonds.","Among the few animals with distinct 'words' for threats."]},{"id":"treesquirrel","n":"Tree squirrel","s":"Paraxerus cepapi","c":"mammal","r":["OKV","HWA","LZA"],"rar":2,"w":"Smith's bush squirrel","l":"Small grey-buff squirrel; flicks a bushy tail. In mopane woodland.","f":["Nicknamed the 'mopane squirrel' for its favourite trees.","Flicks its tail and scolds loudly at intruders.","Spreads its tail over its back as a parasol.","Often the first to announce a passing predator.","Dens in tree holes, sometimes in small family groups."]},{"id":"scrubhare","n":"Scrub hare","s":"Lepus saxatilis","c":"mammal","r":["OKV","HWA","LZA"],"rar":3,"w":"Scrub hare","l":"Long ears; grey-brown with a white belly. Mostly seen at night.","f":["Most often caught in the spotlight on night drives.","Zig-zags at speed to throw off predators.","Rests by day in a shallow scrape called a 'form'.","Long ears shed heat as well as catch sound.","Relies on stillness and camouflage until the last moment."]},{"id":"bushbaby","n":"Lesser bushbaby","s":"Galago moholi","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"Mohol bushbaby","l":"Tiny; enormous eyes and ears. Leaps between trees in the dark.","f":["Named for its child-like wailing night calls.","Enormous eyes give it superb night vision.","Can leap several metres between branches.","Marks its routes by urinating on its own hands.","Look for eye-shine high in the trees after dark."]},{"id":"porcupine","n":"Cape porcupine","s":"Hystrix africaeaustralis","c":"mammal","r":["OKV","HWA","LZA"],"rar":4,"w":"Cape porcupine","l":"Large rodent armoured in long black-and-white quills. Nocturnal.","f":["Africa's largest rodent, armoured in long quills.","Rattles hollow tail quills to warn off threats.","Reverses into attackers — quills can lodge in a lion.","Quills detach easily, but are not 'shot' out.","Gnaws bones to sharpen teeth and get minerals."]},{"id":"pangolin","n":"Ground pangolin","s":"Smutsia temminckii","c":"mammal","r":["OKV","HWA","LZA"],"rar":5,"w":"Ground pangolin","l":"Walks on hind legs; covered in overlapping scales; rolls into a ball.","f":["The only mammal fully covered in scales.","Rolls into an armoured ball when threatened.","Eats ants and termites with a long sticky tongue.","The world's most trafficked mammal — a rare prize.","A single sighting can be the highlight of a whole trip."]},{"id":"crocodile","n":"Nile crocodile","s":"Crocodylus niloticus","c":"reptile","r":["OKV","HWA","LZA"],"rar":2,"w":"Nile crocodile","l":"Large dark crocodile; often basking on banks with jaws open.","f":["Africa's largest crocodile, reaching up to 5 m.","Basks with its mouth open to cool down, not to threaten.","An ambush predator with the strongest measured bite.","Mothers gently carry their hatchlings to the water.","Can stay motionless for hours waiting for prey."]},{"id":"monitor","n":"Nile monitor","s":"Varanus niloticus","c":"reptile","r":["OKV","HWA","LZA"],"rar":3,"w":"Nile monitor","l":"Big lizard; yellow-spotted dark body; forked tongue. Near water.","f":["Africa's longest lizard, and a strong swimmer.","Raids crocodile and bird nests for eggs.","Flicks its forked tongue to 'taste' the air.","Will stand and lash its tail if cornered.","Often basks on logs and dives in when approached."]},{"id":"python","n":"African rock python","s":"Python sebae","c":"reptile","r":["OKV","HWA","LZA"],"rar":4,"w":"African rock python","l":"Huge non-venomous snake with a blotchy brown pattern.","f":["Africa's largest snake — a powerful constrictor.","Tightens its grip each time the prey breathes out.","Can swallow animals far wider than its own head.","Females coil around their eggs to guard them.","Mostly hidden, so a memorable sighting."]},{"id":"tortoise","n":"Leopard tortoise","s":"Stigmochelys pardalis","c":"reptile","r":["OKV","HWA","LZA"],"rar":3,"w":"Leopard tortoise","l":"High-domed shell with yellow-and-black 'leopard' markings.","f":["The region's largest tortoise, named for its shell pattern.","Can live 80 to 100 years in the wild.","The only local tortoise that can swim a little.","Retreats fully into its high, domed shell.","Often seen crossing tracks slowly in the morning."]},{"id":"chameleon","n":"Flap-necked chameleon","s":"Chamaeleo dilepis","c":"reptile","r":["OKV","HWA","LZA"],"rar":4,"w":"Flap-necked chameleon","l":"Green to brown; turreted swivelling eyes; grips twigs; flaps behind the head.","f":["Its eyes swivel independently to scan two ways at once.","Changes colour for mood and warmth, not only camouflage.","Fires a sticky tongue longer than its own body.","The neck flaps flare when it feels threatened.","Often crosses roads at night, glowing pale in the lights."]},{"id":"puffadder","n":"Puff adder","s":"Bitis arietans","c":"reptile","r":["OKV","HWA","LZA"],"rar":4,"w":"Puff adder","l":"Thick and short; chevron pattern; sluggish, so easily underfoot.","f":["Causes more serious snakebites than any African snake.","Relies on camouflage and stillness, so easily stepped on.","Hisses a loud warning 'puff' when disturbed.","Watch your feet on paths at dusk.","Ambushes prey rather than chasing it."]},{"id":"blackmamba","n":"Black mamba","s":"Dendroaspis polylepis","c":"reptile","r":["OKV","HWA","LZA"],"rar":4,"w":"Black mamba","l":"Long, slender, grey-brown; the inside of the mouth is inky black.","f":["Africa's longest venomous snake — up to 4 m.","Named for its ink-black mouth, not its body colour.","Among the fastest snakes, but it flees rather than fights.","Usually avoids people if given a clear escape route.","Far more interested in getting away than attacking."]},{"id":"fisheagle","n":"African fish eagle","s":"Haliaeetus vocifer","c":"bird","r":["OKV","HWA","LZA"],"rar":1,"w":"African fish eagle","l":"White head and chest, chestnut body. A ringing call across the water.","f":["Its yelping call is the iconic 'voice of Africa'.","Snatches fish from the surface with its talons.","Pairs duet, throwing their heads back as they call.","A constant presence along the delta's channels.","Will also pirate catches from other birds."]},{"id":"roller","n":"Lilac-breasted roller","s":"Coracias caudatus","c":"bird","r":["OKV","HWA","LZA"],"rar":1,"w":"Lilac-breasted roller","l":"Dazzling lilac, turquoise and blue. Perches conspicuously in the open.","f":["Botswana's unofficial national bird, ablaze with colour.","Named for its acrobatic 'rolling' courtship flights.","Perches in the open to drop on insects and lizards.","Up to eight colours can show on a single bird.","One of the most photographed birds in Africa."]},{"id":"saddlestork","n":"Saddle-billed stork","s":"Ephippiorhynchus senegalensis","c":"bird","r":["OKV","HWA","LZA"],"rar":3,"w":"Saddle-billed stork","l":"Tall; red-and-black bill with a yellow 'saddle'; black-and-white body.","f":["The tallest stork in Africa, striking at the water's edge.","A yellow shield on the bill gives it its name.","Its eyes differ by sex — females golden, males dark.","Stalks fish and frogs in the shallows.","Usually seen singly or in pairs, never in flocks."]},{"id":"marabou","n":"Marabou stork","s":"Leptoptilos crumenifer","c":"bird","r":["OKV","HWA","LZA"],"rar":2,"w":"Marabou stork","l":"Huge; bald head, dangling throat pouch; a hunched, undertaker look.","f":["Nicknamed the 'undertaker bird' for its hunched stance.","One of the largest flying birds, near a 3 m wingspan.","A bald head keeps it clean while scavenging carcasses.","Often loiters near vultures at a kill.","Ungainly on the ground, but soars effortlessly."]},{"id":"groundhornbill","n":"Southern ground hornbill","s":"Bucorvus leadbeateri","c":"bird","r":["OKV","HWA","LZA"],"rar":3,"w":"Southern ground hornbill","l":"Turkey-sized and black, with bare red face and throat. Walks the ground.","f":["Walks the savanna hunting snakes, frogs and insects.","Booming dawn calls carry for kilometres.","Can live over 50 years and breeds very slowly.","Red throat skin marks adults; juveniles are paler.","A traditional symbol of rain in parts of the region."]},{"id":"carmine","n":"Southern carmine bee-eater","s":"Merops nubicoides","c":"bird","r":["LZA","OKV"],"rar":3,"w":"Southern carmine bee-eater","l":"Vivid carmine-red with a teal crown. Nests in riverbanks.","f":["Nests in huge colonies dug into Zambezi riverbanks.","Rides on kori bustards to snap up flushed insects.","Catches bees in flight and beats out the sting first.","One of the Zambezi's great wildlife spectacles.","Colonies can hold thousands of nesting pairs."]},{"id":"wattledcrane","n":"Wattled crane","s":"Bugeranus carunculatus","c":"bird","r":["OKV"],"rar":4,"w":"Wattled crane","l":"Tall, grey-and-white; red facial skin; white feathered wattles at the throat.","f":["Africa's rarest crane, a flagship of the Okavango.","Pairs for life and needs healthy floodplains to breed.","Dangling white wattles give it its name.","A barometer of the delta's wetland health.","Seeing one is a sign of a thriving floodplain."]},{"id":"jacana","n":"African jacana","s":"Actophilornis africanus","c":"bird","r":["OKV","HWA","LZA"],"rar":1,"w":"African jacana","l":"Chestnut body; blue bill and forehead shield; huge toes. Walks on lily pads.","f":["Nicknamed the 'lily-trotter' for walking on floating leaves.","Enormous toes spread its weight across the water.","Roles are reversed: males incubate and raise the chicks.","Can tuck chicks under its wings and carry them off.","A constant sight on the delta's lily-covered lagoons."]},{"id":"hamerkop","n":"Hamerkop","s":"Scopus umbretta","c":"bird","r":["OKV","HWA","LZA"],"rar":2,"w":"Hamerkop","l":"Plain brown; a hammer-shaped head from its crest and bill. Near water.","f":["Named for its hammer-shaped silhouette.","Builds enormous stick nests over a metre across.","A single nest can weigh as much as an adult person.","Wades the shallows hunting frogs and small fish.","Its huge nests are later used by many other animals."]},{"id":"redbillhornbill","n":"Red-billed hornbill","s":"Tockus rufirostris","c":"bird","r":["OKV","HWA","LZA"],"rar":1,"w":"Southern red-billed hornbill","l":"White body, dark wings, and a long curved red bill.","f":["The 'flying banana' that inspired Zazu in The Lion King.","Seals the female inside a tree-hole nest with mud.","Feeds her through a slit until the chicks are grown.","Hops along the ground after insects and seeds.","One of the most common and comical birds you'll meet."]},{"id":"koribustard","n":"Kori bustard","s":"Ardeotis kori","c":"bird","r":["OKV","HWA"],"rar":3,"w":"Kori bustard","l":"Massive grey ground bird; black crest. Struts the open plains.","f":["Among the heaviest birds still able to fly.","Males inflate the throat and boom during display.","Often carries bee-eaters that hunt the insects it flushes.","Prefers to stride away rather than take to the air.","A stately, deliberate walker of open grassland."]},{"id":"pelsowl","n":"Pel's fishing owl","s":"Scotopelia peli","c":"bird","r":["OKV","LZA"],"rar":5,"w":"Pel's fishing owl","l":"Large rufous owl with dark eyes. Hunts fish at night along the water.","f":["A huge owl that hunts fish along quiet channels.","The 'holy grail' bird for Okavango birders.","Listens for ripples, then grabs fish with bare feet.","Roosts in dense riverside trees by day.","Finding one usually means a knowing guide and some luck."]},{"id":"secretarybird","n":"Secretary bird","s":"Sagittarius serpentarius","c":"bird","r":["OKV","HWA"],"rar":4,"w":"Secretarybird","l":"Tall; grey body, black 'trousers'; long legs; quill-like head crest.","f":["Strides the grasslands stamping snakes to death.","Its crest quills look like pens behind a clerk's ear.","Kicks with several times its body weight in force.","One of the few raptors that hunts on foot.","Can cover 20 km a day walking after prey."]}];
+
+const REGION_FULL={OKV:"Okavango Delta",HWA:"Hwange",LZA:"Lower Zambezi"};
+const REGION_SHORT={OKV:"Okavango",HWA:"Hwange",LZA:"L. Zambezi"};
+const RARITY_LABEL=["","Everyday","Common","Occasional","Scarce","Rare · grail"];
+
+const DESTS=[
+{id:"bw",country:"Botswana",flag:"🇧🇼",park:"Okavango Delta",accent:"okv",coords:"19°S · 23°E",
+ lede:"A maze of water and palm-islands in the heart of the Kalahari — reached mostly by mokoro and light plane.",
+ quick:{Capital:"Gaborone",Gateway:"Maun",Currency:"Pula",Independence:"1966",President:"Duma Boko (2024)",Park:"World's largest inland delta"},
+ brief:[
+  {h:"The country",items:[
+   "Landlocked and lightly peopled — about 2.4 million in an area the size of France.",
+   "One of the world's top diamond producers; the revenue built schools, clinics and reserves.",
+   "A stable multiparty democracy since independence in 1966 — a rarity on the continent.",
+   "The currency, the pula, means 'rain' — and 'Pula!' is the national cheer. Water is everything here.",
+   "Roughly 38% of the land is set aside for wildlife, among the highest shares on Earth."]},
+  {h:"The Okavango Delta",items:[
+   "The world's largest inland delta: the river drains into the Kalahari, never reaching a sea.",
+   "Its floodwater falls in the Angolan highlands and takes ~4 months to arrive — so it floods in the dry season.",
+   "The flood can swell the wetland from about 6,000 to 15,000 km² and then shrink back.",
+   "Named UNESCO's symbolic 1,000th World Heritage Site in 2014.",
+   "Hippos and elephants keep the channels open by pushing through the reeds.",
+   "Most of its islands begin as termite mounds, then grow palms and trees."]},
+  {h:"Wildlife to watch for",items:[
+   "Red lechwe and the secretive sitatunga are the signature antelope, built for the water.",
+   "One of the planet's best places to watch wild dogs and big cats hunt the floodplains.",
+   "Over 480 bird species; the wattled crane and Pel's fishing owl are the prizes.",
+   "Travel is slow and quiet by mokoro — a poled dugout canoe — which gets you eye-level with it all."]},
+  {h:"People & history",items:[
+   "The San (Bushmen) have lived in the Kalahari for tens of thousands of years.",
+   "The Tswana are the largest group; cattle are central to wealth, culture and status.",
+   "Maun is the dusty safari capital where almost every delta trip begins."]},
+  {h:"Right now · 2026",items:[
+   "President Duma Boko (UDC) took office in November 2024, ending 58 years of BDP rule.",
+   "His government is pushing to diversify beyond diamonds — tourism, farming and energy.",
+   "How to manage the country's huge elephant population is a live political debate."]}
+ ],
+ quiz:[
+  {q:"What is Botswana's capital?",o:["Gaborone","Maun","Francistown","Kasane"],a:0,e:"Gaborone is the capital; Maun is the gateway town to the delta."},
+  {q:"Who became president in November 2024, ending nearly 58 years of one-party rule?",o:["Duma Boko","Mokgweetsi Masisi","Ian Khama","Festus Mogae"],a:0,e:"Boko's UDC unseated the BDP, which had governed since 1966."},
+  {q:"What makes the Okavango unusual among great wetlands?",o:["It's an inland delta that never reaches the sea","It's the deepest lake in Africa","It freezes each winter","It's man-made"],a:0,e:"Its waters fan out and vanish into the Kalahari sands."},
+  {q:"Oddly, the delta floods during which season?",o:["The dry season","Midsummer rains","Spring only","It never floods"],a:0,e:"The water fell months earlier in Angola and arrives in the dry months — peak around June–August."},
+  {q:"Most travel within the delta is by…",o:["Mokoro (dugout canoe) and light plane","Motorway","Train","Cable car"],a:0,e:"Few roads cross it; you pole through channels or fly over them."},
+  {q:"Botswana holds the world's largest population of which animal?",o:["Elephants","Lions","Giraffes","Penguins"],a:0,e:"Over 130,000 elephants — managing them is a real policy issue."},
+  {q:"Roughly what share of Botswana is set aside for wildlife?",o:["About a third","About 5%","Almost none","Over 90%"],a:0,e:"Around 38% — one of the highest proportions anywhere."},
+  {q:"Many of the delta's islands begin life as what?",o:["Termite mounds","Volcanoes","Shipwrecks","Coral reefs"],a:0,e:"A mound rises above the flood, catches seeds, and grows into a palm island."},
+  {q:"What is the currency, whose name also means 'rain'?",o:["Pula","Kwacha","Rand","Shilling"],a:0,e:"The pula — rain is the most precious thing in a dry land."},
+  {q:"The main language and largest ethnic group share which name?",o:["Tswana (Setswana)","Zulu","Shona","Swahili"],a:0,e:"Setswana is the national language; English is official."},
+  {q:"Most of Botswana is covered by which environment?",o:["The Kalahari, a semi-arid sand savanna","Rainforest","High mountains","Coastal marsh"],a:0,e:"Sand savanna rather than bare dunes — it supports surprising wildlife."},
+  {q:"In what year did Botswana gain independence from Britain?",o:["1966","1980","1947","1994"],a:0,e:"1966, with regular elections ever since."},
+  {q:"The Okavango was inscribed by UNESCO in 2014 as which milestone?",o:["The 1,000th World Heritage Site","The first in Africa","The largest ever","The smallest ever"],a:0,e:"It became the symbolic 1,000th site on the list."},
+  {q:"Which people have inhabited the Kalahari for tens of thousands of years?",o:["The San (Bushmen)","The Vikings","The Maya","The Inuit"],a:0,e:"The San are among the oldest continuous cultures on Earth."}
+ ]},
+{id:"zw",country:"Zimbabwe",flag:"🇿🇼",park:"Hwange National Park",accent:"hwa",coords:"19°S · 27°E",
+ lede:"Zimbabwe's largest park — vast teak and mopane wilderness whose game survives the dry months at pumped waterholes.",
+ quick:{Capital:"Harare",Nearest:"Bulawayo",Currency:"ZiG / multi",Independence:"1980",President:"E. Mnangagwa (2017)",Park:"~14,600 km²"},
+ brief:[
+  {h:"The country",items:[
+   "Named after Great Zimbabwe, a medieval stone city built by the ancestral Shona (11th–15th c.).",
+   "Independence from Britain came in 1980 after a long liberation war.",
+   "Robert Mugabe led for 37 years until a 2017 military takeover removed him.",
+   "Suffered one of history's worst hyperinflations in the late 2000s — banknotes reached trillions.",
+   "Two main indigenous language groups: Shona (majority) and Ndebele (southwest)."]},
+  {h:"Hwange National Park",items:[
+   "Zimbabwe's largest park, about 14,600 km² — roughly the size of Northern Ireland.",
+   "Famous for vast elephant herds; dry-season numbers can top 45,000.",
+   "Has almost no permanent natural water — survival hinges on pumped waterholes, or 'pans'.",
+   "Sits on Kalahari sand, mixing teak forest, mopane woodland and open grassland.",
+   "Once the royal hunting ground of the Ndebele king Mzilikazi; gazetted as a park in 1928.",
+   "Over 100 mammal species and 400+ birds have been recorded here."]},
+  {h:"Wildlife to watch for",items:[
+   "Dry-season game piles up at the pumped pans — superb for elephants and predators.",
+   "A stronghold for sable and roan antelope, and for endangered wild dogs.",
+   "Big lion prides are a Hwange signature; leopard and cheetah are about too.",
+   "Best viewing is the late dry season (August–October), as water draws everything in."]},
+  {h:"People & history",items:[
+   "'Cecil', a collared lion killed by a hunter in 2015, was a Hwange resident and sparked global outcry.",
+   "Local communities increasingly share tourism income through conservancies.",
+   "Victoria Falls — Mosi-oa-Tunya, 'the smoke that thunders' — lies just to the north."]},
+  {h:"Right now · 2026",items:[
+   "President Emmerson Mnangagwa (ZANU-PF), nicknamed 'the Crocodile', has led since 2017.",
+   "A contested 2026 bill would extend presidential terms and could keep him in power to 2030.",
+   "After years of currency turmoil, the economy runs on a mix of currencies."]}
+ ],
+ quiz:[
+  {q:"What is Zimbabwe's capital?",o:["Harare","Bulawayo","Victoria Falls","Mutare"],a:0,e:"Harare is the capital; Bulawayo is the second city, nearer Hwange."},
+  {q:"Who is Zimbabwe's president, known as 'the Crocodile'?",o:["Emmerson Mnangagwa","Robert Mugabe","Nelson Chamisa","Morgan Tsvangirai"],a:0,e:"Mnangagwa has led since 2017 and was re-elected in 2023."},
+  {q:"Hwange is best known for huge herds of which animal?",o:["Elephants","Penguins","Gorillas","Camels"],a:0,e:"Among the largest elephant concentrations in Africa."},
+  {q:"Roughly how big is Hwange?",o:["About the size of Northern Ireland","A few city blocks","Bigger than Texas","A single valley"],a:0,e:"Around 14,600 km² — Zimbabwe's largest park."},
+  {q:"In the dry season Hwange's wildlife depends mostly on…",o:["Pumped, man-made waterholes","Melting snow","Daily rain","Underground geysers"],a:0,e:"Pumped pans concentrate the game and are central to the park's survival."},
+  {q:"'Cecil', killed in 2015 to global outcry, was a famous Hwange…",o:["Lion","Elephant","Rhino","Eagle"],a:0,e:"A collared, much-studied lion whose death drew worldwide attention."},
+  {q:"The waterfall on Zimbabwe's border, Mosi-oa-Tunya, means what?",o:["The smoke that thunders","The river of gold","The endless mist","The sleeping giant"],a:0,e:"Victoria Falls, on the Zambezi, shared with Zambia."},
+  {q:"Great Zimbabwe, the stone city that named the country, was mainly a…",o:["Medieval trading city","Roman fort","Modern factory","Pharaoh's tomb"],a:0,e:"A Shona trading hub that flourished from roughly the 11th–15th centuries."},
+  {q:"The late-2000s economy was infamously wrecked by what?",o:["Hyperinflation","A gold rush","An oil boom","A tech bubble"],a:0,e:"It abandoned its own dollar after notes ran into the trillions."},
+  {q:"What are Zimbabwe's two main indigenous language groups?",o:["Shona and Ndebele","Zulu and Xhosa","Swahili and Hausa","Tswana and Sotho"],a:0,e:"Shona is the majority; Ndebele dominates the southwest."},
+  {q:"In what year did Zimbabwe gain independence from Britain?",o:["1980","1965","1994","2000"],a:0,e:"1980, after a long liberation war."},
+  {q:"Robert Mugabe's 37-year rule ended in 2017 through what?",o:["A military takeover","An election loss","Retirement","Emigration"],a:0,e:"The army intervened and he resigned; Mnangagwa took over."},
+  {q:"A contested 2026 bill would extend the president's term until which year?",o:["2030","2027","2040","2050"],a:0,e:"The proposed change to keep Mnangagwa to 2030 is fiercely debated."},
+  {q:"Hwange was first established as a park in which decade?",o:["The 1920s","The 1990s","The 2010s","The 1850s"],a:0,e:"Gazetted in 1928 on a former royal hunting ground."}
+ ]},
+{id:"zm",country:"Zambia",flag:"🇿🇲",park:"Lower Zambezi",accent:"lza",coords:"15°S · 29°E",
+ lede:"A wild stretch of the Zambezi beneath a steep escarpment — best explored by canoe, drifting past elephants and hippos.",
+ quick:{Capital:"Lusaka",Falls:"Livingstone",Currency:"Kwacha",Independence:"1964",President:"H. Hichilema (2021)",Park:"Gazetted 1983"},
+ brief:[
+  {h:"The country",items:[
+   "Independence from Britain came in 1964; founding president Kenneth Kaunda led for 27 years.",
+   "Copper is the economic backbone — the 'Copperbelt' rises and falls with world prices.",
+   "Known regionally for peaceful, democratic transfers of power.",
+   "More than 70 ethnic groups and languages; English is the official tongue.",
+   "Shares Victoria Falls and the vast Lake Kariba with Zimbabwe along the Zambezi."]},
+  {h:"Lower Zambezi National Park",items:[
+   "Runs along the Zambezi River, directly opposite Zimbabwe's Mana Pools.",
+   "Famous for canoe safaris that drift past hippos, crocs and drinking elephants.",
+   "A dramatic stage: the river and floodplain backed by a steep escarpment.",
+   "A relatively young park, gazetted in 1983, and still wonderfully wild.",
+   "Elephants here swim between islands and even cross the river itself.",
+   "Winterthorn (Faidherbia) woodland pulls game onto the floodplain in the dry season."]},
+  {h:"Wildlife to watch for",items:[
+   "Big concentrations of elephant, buffalo and hippo line the river.",
+   "Excellent for leopard and lion, and for packs of wild dog.",
+   "World-class birding and tiger-fishing on the water.",
+   "Canoeing gives a low, intimate view you can't get from a vehicle."]},
+  {h:"People & history",items:[
+   "The Zambezi is the region's lifeline; its name is often read as 'great river'.",
+   "David Livingstone explored here in the 1850s — the falls town bears his name.",
+   "Zambia built its reputation on low-impact walking and canoe safaris."]},
+  {h:"Right now · 2026",items:[
+   "President Hakainde Hichilema ('HH', UPND), a businessman-farmer, has led since 2021.",
+   "A general election is due on 13 August 2026 — just before your trip.",
+   "His government has pushed free education and courted foreign investment."]}
+ ],
+ quiz:[
+  {q:"What is Zambia's capital?",o:["Lusaka","Livingstone","Ndola","Kitwe"],a:0,e:"Lusaka is the capital; Livingstone sits beside Victoria Falls."},
+  {q:"Who is Zambia's president, widely known as 'HH'?",o:["Hakainde Hichilema","Edgar Lungu","Kenneth Kaunda","Levy Mwanawasa"],a:0,e:"Hichilema won in 2021; a new election is due in August 2026."},
+  {q:"Lower Zambezi runs along which river, opposite Mana Pools?",o:["The Zambezi","The Nile","The Congo","The Limpopo"],a:0,e:"The Zambezi forms the border; canoes drift past the wildlife."},
+  {q:"Which Zimbabwean park sits directly across the river?",o:["Mana Pools","Kruger","Serengeti","Etosha"],a:0,e:"Mana Pools faces Lower Zambezi across the Zambezi."},
+  {q:"Zambia's economy depends heavily on exporting which metal?",o:["Copper","Tin","Silver","Aluminium"],a:0,e:"The Copperbelt drives it, so global copper prices hit hard."},
+  {q:"Which vast man-made lake does Zambia share with Zimbabwe?",o:["Lake Kariba","Lake Victoria","Lake Malawi","Lake Tanganyika"],a:0,e:"Kariba is among the world's largest reservoirs by volume."},
+  {q:"Who was Zambia's first president?",o:["Kenneth Kaunda","Nelson Mandela","Robert Mugabe","Julius Nyerere"],a:0,e:"Kaunda led from independence in 1964 for 27 years."},
+  {q:"The prized fighting fish anglers chase in the Zambezi is the…",o:["Tigerfish","Salmon","Cod","Piranha"],a:0,e:"The tigerfish is a fierce, toothy freshwater predator."},
+  {q:"In what year did Zambia gain independence from Britain?",o:["1964","1980","1957","1994"],a:0,e:"1964, with Kenneth Kaunda as first president."},
+  {q:"The Zambian town beside Victoria Falls is named after which explorer?",o:["David Livingstone","Cecil Rhodes","Henry Stanley","James Cook"],a:0,e:"Livingstone, after the missionary-explorer."},
+  {q:"What is Zambia's currency?",o:["Kwacha","Pula","Rand","Birr"],a:0,e:"The kwacha — a name it shares with Malawi."},
+  {q:"Lower Zambezi is especially famous for which kind of safari?",o:["Canoe safaris past hippos and crocs","Hot-air ballooning","Skiing","Deep-sea diving"],a:0,e:"Paddling gives a low, intimate view of the wildlife."},
+  {q:"Behind the floodplain, the landscape rises into a dramatic…",o:["Escarpment","Glacier","Sand dune sea","Coral atoll"],a:0,e:"A steep escarpment frames the valley and channels the game."},
+  {q:"Zambia is noted in the region for which political quality?",o:["Peaceful transfers of power","Frequent coups","Absolute monarchy","Having no elections"],a:0,e:"The 2021 vote, when the incumbent conceded to HH, is a recent example."}
+ ]}
+];
+
+/* ============================ APP ============================ */
+const STORE_KEY="spoor_state_v3";
+const App=(function(){
+  let S=load();
+  const totalSpecies=SPECIES.length;
+  const byId=Object.fromEntries(SPECIES.map(s=>[s.id,s]));
+  function load(){try{const r=JSON.parse(localStorage.getItem(STORE_KEY));if(r&&r.sr)return r;}catch(e){}return {name:null,sr:{},dest:{},factIx:{}};}
+  function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S));}catch(e){}}
+
+  /* ---- image resolver: REST summary first, action API fallback, cached ---- */
+  const imgCache={};
+  function upsize(u){return u&&/\/\d+px-/.test(u)?u.replace(/\/\d+px-/,"/720px-"):u;}
+  function cacheImg(t,src){imgCache[t]=src;try{localStorage.setItem("spoorimg_"+t,src);}catch(e){}return src;}
+  // JSONP: uses a <script> tag — bypasses CORS entirely, works from file:// and any host
+  function resolveImage(title){
+    if(imgCache[title]!==undefined)return Promise.resolve(imgCache[title]);
+    let c=null;try{c=localStorage.getItem("spoorimg_"+title);}catch(e){}
+    if(c){imgCache[title]=c;return Promise.resolve(c);}
+    return new Promise(resolve=>{
+      const cb="_wp"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+      const sc=document.createElement("script");
+      const done=(src)=>{
+        try{document.head.removeChild(sc);}catch(e){}
+        delete window[cb];
+        resolve(src?(cacheImg(title,src)):(imgCache[title]=null,null));
+      };
+      const tid=setTimeout(()=>done(null),8000);
+      window[cb]=function(data){
+        clearTimeout(tid);
+        const pages=data&&data.query&&data.query.pages;
+        if(!pages)return done(null);
+        const k=Object.keys(pages)[0];
+        const src=pages[k]&&pages[k].thumbnail&&pages[k].thumbnail.source;
+        done(src?upsize(src):null);
+      };
+      sc.onerror=()=>{clearTimeout(tid);done(null);};
+      sc.src="https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&piprop=thumbnail&pithumbsize=720&redirects=1&titles="+encodeURIComponent(title)+"&callback="+cb;
+      document.head.appendChild(sc);
+    });
+  }
+  function silhouette(c){return c==="bird"?"🪶":c==="reptile"?"🦎":"🐾";}
+  function fadeImg(box,src){const img=new Image();
+    img.onload=()=>{box.innerHTML="";img.className="";box.appendChild(img);requestAnimationFrame(()=>img.classList.add("in"));};
+    img.onerror=()=>box.classList.add("fail");img.src=src;}
+
+  /* ---- spaced repetition ---- */
+  function srOf(id){return S.sr[id]||(S.sr[id]={box:0,due:0,seen:0});}
+  const DAY=864e5,INTERVAL=[0,1*DAY,2*DAY,4*DAY,8*DAY,16*DAY];
+  function masteredCount(){return SPECIES.filter(s=>S.sr[s.id]&&S.sr[s.id].box>=4).length;}
+  function gradeSR(id,correct){const r=srOf(id);r.seen++;r.box=correct?Math.min(5,r.box+1):Math.max(0,r.box-2);r.due=Date.now()+INTERVAL[r.box];save();}
+  function buildQueue(n){const now=Date.now();
+    const sc=SPECIES.map(s=>{const r=S.sr[s.id];const box=r?r.box:0,due=r?r.due:0,seen=r?r.seen:0;
+      let pr=seen===0?100:(due<=now?80-box*5:20-box*3);return {s,pr,rand:Math.random()};});
+    sc.sort((a,b)=>b.pr-a.pr||a.rand-b.rand);return sc.slice(0,n).map(x=>x.s);}
+
+  /* ---- rotating facts ---- */
+  function nextFact(id){const sp=byId[id];const i=(S.factIx[id]||0)%sp.f.length;S.factIx[id]=(i+1)%sp.f.length;save();return sp.f[i];}
+  function peekFact(id){const sp=byId[id];return sp.f[(S.factIx[id]||0)%sp.f.length];}
+
+  /* ---- tag builders ---- */
+  function regionChips(r){return r.map(x=>'<span class="chip '+x.toLowerCase()+'"><span class="dot"></span>'+REGION_SHORT[x]+'</span>').join("");}
+  function rarityMeter(rar){let pips="";for(let i=1;i<=5;i++)pips+='<i class="'+(i<=rar?'on':'')+'"></i>';
+    return '<span class="rarity r'+rar+'"><span class="pips">'+pips+'</span>'+RARITY_LABEL[rar]+'</span>';}
+
+  /* ---- nav ---- */
+  const screens=["home","guide","detail","spot","dests","brief","dquiz"];
+  function show(id){screens.forEach(s=>document.getElementById(s).classList.toggle("active",s===id));window.scrollTo(0,0);if(id==="home")renderHome();}
+
+  /* ---- HOME ---- */
+  function renderHome(){
+    document.getElementById("guideCount").textContent=totalSpecies+" species";
+    const m=masteredCount();
+    document.getElementById("masterCount").textContent=m+" of "+totalSpecies+" mastered";
+    document.getElementById("masterBar").style.width=(m/totalSpecies*100)+"%";
+    const seen=SPECIES.reduce((a,s)=>a+(S.sr[s.id]?Math.min(S.sr[s.id].box,4):0),0);
+    const pct=Math.round(seen/(totalSpecies*4)*100);
+    const R=30,C=2*Math.PI*R,off=C*(1-pct/100);
+    document.getElementById("ring").innerHTML=
+      '<svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="'+R+'" fill="none" stroke="rgba(247,237,215,0.22)" stroke-width="6"/>'+
+      '<circle cx="39" cy="39" r="'+R+'" fill="none" stroke="#E7A53A" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'" transform="rotate(-90 39 39)"/>'+
+      '<text class="pct" x="39" y="43" text-anchor="middle">'+pct+'%</text></svg><small>ready</small>';
+    const who=S.name?(", "+S.name):"";
+    document.getElementById("playSub").textContent="One tap"+who+", a random round — spot an animal or test a country. No deciding.";
+    if(!S.name)setTimeout(()=>{if(!S.name)openName();},500);
+  }
+
+  /* ---- JUST PLAY ---- */
+  function justPlay(){
+    const roll=Math.random();
+    if(roll<0.55)return startSpot();
+    if(roll<0.80)return startDestQuiz(DESTS[Math.floor(Math.random()*DESTS.length)].id);
+    // surprise species card
+    const s=SPECIES[Math.floor(Math.random()*SPECIES.length)];openDetail(s.id,true);
+  }
+
+  /* ---- FIELD GUIDE ---- */
+  let guideFilter="all";
+  function openGuide(){show("guide");renderFilters();renderGuide();}
+  function renderFilters(){
+    const fils=[["all","All"],["mammal","Mammals"],["bird","Birds"],["reptile","Reptiles"],["OKV","Okavango"],["HWA","Hwange"],["LZA","Zambezi"],["rare","Rare finds"]];
+    document.getElementById("filters").innerHTML=fils.map(f=>'<button class="fil'+(guideFilter===f[0]?' on':'')+'" onclick="App.setFilter(\''+f[0]+'\')">'+f[1]+'</button>').join("");
+  }
+  function setFilter(f){guideFilter=f;renderFilters();renderGuide();}
+  function renderGuide(){
+    const term=(document.getElementById("search").value||"").toLowerCase().trim();
+    let list=SPECIES.filter(s=>{
+      if(["mammal","bird","reptile"].includes(guideFilter)&&s.c!==guideFilter)return false;
+      if(["OKV","HWA","LZA"].includes(guideFilter)&&!s.r.includes(guideFilter))return false;
+      if(guideFilter==="rare"&&s.rar<4)return false;
+      if(term&&!(s.n.toLowerCase().includes(term)||s.s.toLowerCase().includes(term)))return false;
+      return true;});
+    document.getElementById("guideSub").textContent=list.length+" species";
+    document.getElementById("guideEmpty").style.display=list.length?"none":"block";
+    document.getElementById("grid").innerHTML=list.map(s=>{
+      const mastered=S.sr[s.id]&&S.sr[s.id].box>=4;
+      let pips="";for(let i=1;i<=5;i++)pips+='<i class="'+(i<=s.rar?'on':'')+'"></i>';
+      return '<div class="spec" onclick="App.openDetail(\''+s.id+'\')">'+
+        '<div class="ph" id="ph-'+s.id+'">'+(mastered?'<span class="mastered-dot">✓</span>':'')+'<span class="ld">◐</span></div>'+
+        '<div class="b"><span class="nm">'+s.n+'</span><span class="sci">'+s.s+'</span>'+
+        '<div class="foot"><div class="rg">'+s.r.map(r=>'<span style="background:var(--'+r.toLowerCase()+')"></span>').join("")+'</div>'+
+        '<div class="rp r'+s.rar+'">'+pips+'</div></div></div></div>';
+    }).join("");
+    list.forEach(s=>resolveImage(s.w).then(src=>{const ph=document.getElementById("ph-"+s.id);if(!ph)return;
+      if(src)fadeImg(ph,src);else{ph.classList.add("fail");const ld=ph.querySelector(".ld");if(ld)ld.outerHTML='<span class="silho">'+silhouette(s.c)+'</span>';}}));
+  }
+
+  /* ---- DETAIL ---- */
+  let detailFrom="guide";
+  function openDetail(id,fromHome){const s=byId[id];detailFrom=fromHome?"home":"guide";show("detail");
+    document.querySelector("#detail .back").setAttribute("onclick","App.show('"+detailFrom+"')");
+    document.getElementById("dGuideTitle").textContent=s.c.charAt(0).toUpperCase()+s.c.slice(1);
+    document.getElementById("detailBody").innerHTML=
+      '<div class="hero" id="hero"><span class="silho">'+silhouette(s.c)+'</span></div>'+
+      '<h1>'+s.n+'</h1><div class="sci">'+s.s+'</div>'+
+      '<div class="statline">'+rarityMeter(s.rar)+'</div>'+
+      '<div class="row">'+regionChips(s.r)+'</div>'+
+      '<div class="look"><div class="lab">Look for</div><p>'+s.l+'</p></div>'+
+      '<div class="factbox" id="factbox" onclick="App.cycleFact(\''+id+'\')"><div class="lab"><span>Field note</span><span>tap for more ›</span></div><p id="factText">'+peekFact(id)+'</p></div>';
+    resolveImage(s.w).then(src=>{const hero=document.getElementById("hero");if(!hero)return;
+      if(src){const img=new Image();img.onload=()=>{hero.innerHTML="";img.className="in";hero.appendChild(img);hero.insertAdjacentHTML("beforeend",'<span class="credit">photo · Wikimedia</span>');};img.src=src;}});
+  }
+  function cycleFact(id){const t=document.getElementById("factText");const f=nextFact(id);if(t){t.style.opacity=0;setTimeout(()=>{t.textContent=f;t.style.opacity=1;},120);}}
+
+  /* ---- SPOT QUIZ ---- */
+  let session=null;
+  function startSpot(){session={queue:buildQueue(12),i:0,score:0,answered:false};show("spot");renderSpot();}
+  function distractors(correct){const pool=SPECIES.filter(s=>s.id!==correct.id&&s.c===correct.c);
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}return pool.slice(0,3);}
+  function renderSpot(){
+    if(session.i>=session.queue.length)return spotResults();
+    session.answered=false;const s=session.queue[session.i];
+    document.getElementById("spotProg").style.width=(session.i/session.queue.length*100)+"%";
+    document.getElementById("spotScore").textContent=session.score;
+    const opts=[s,...distractors(s)];
+    for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+    session.opts=opts;
+    document.getElementById("spotBody").innerHTML=
+      '<div class="q-img" id="qimg"><span class="ld">◐</span></div>'+
+      '<div class="q-ask">Which animal is this?</div>'+
+      '<div class="opts" id="qopts">'+opts.map((o,n)=>'<button class="opt" onclick="App.answerSpot('+n+')"><span class="ic">'+String.fromCharCode(65+n)+'</span>'+o.n+'</button>').join("")+'</div>'+
+      '<div id="qreveal"></div>';
+    resolveImage(s.w).then(src=>{const box=document.getElementById("qimg");if(!box)return;
+      if(src)fadeImg(box,src);else{box.innerHTML='<span class="silho">'+silhouette(s.c)+'</span>';
+        const ask=document.querySelector(".q-ask");if(ask)ask.textContent="Name this animal";
+        box.insertAdjacentHTML("afterend",'<div class="q-clue">'+s.l+'</div>');}});
+  }
+  function answerSpot(n){
+    if(session.answered)return;session.answered=true;
+    const s=session.queue[session.i],chosen=session.opts[n],correct=chosen.id===s.id;
+    document.querySelectorAll("#qopts .opt").forEach((b,i)=>{b.disabled=true;
+      if(session.opts[i].id===s.id)b.classList.add("correct","pulse");else if(i===n)b.classList.add("wrong","shake");else b.classList.add("dim");});
+    if(correct)session.score++;gradeSR(s.id,correct);
+    document.getElementById("spotScore").textContent=session.score;
+    const fact=nextFact(s.id);
+    document.getElementById("qreveal").innerHTML=
+      '<div class="reveal"><div class="rn '+(correct?"ok":"no")+'">'+(correct?"✓ "+s.n:"✗ It's the "+s.n)+'</div>'+
+      '<div class="rsci sci">'+s.s+'</div>'+
+      '<div class="rtags">'+regionChips(s.r)+rarityMeter(s.rar)+'</div>'+
+      '<p class="rf"><span class="lab">Field note</span>'+fact+'</p></div>'+
+      '<button class="btn" onclick="App.nextSpot()">'+(session.i+1>=session.queue.length?"See results":"Next")+'</button>';
+    document.getElementById("qreveal").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+  function nextSpot(){session.i++;renderSpot();}
+  function spotResults(){
+    document.getElementById("spotProg").style.width="100%";
+    const m=masteredCount(),pct=Math.round(session.score/session.queue.length*100);
+    const line=pct===100?"Perfect round. Your eye is sharp.":pct>=70?"Strong — the tricky ones will resurface until they stick.":"Good start. The misses come back more often now.";
+    document.getElementById("spotBody").innerHTML=
+      '<div class="result"><div class="big">'+session.score+'<span style="font-size:28px;color:var(--muted)">/'+session.queue.length+'</span></div>'+
+      '<div class="lbl">this round</div><h2>'+line+'</h2><p>'+m+' of '+totalSpecies+' species mastered so far.</p>'+
+      '<button class="btn water" onclick="App.startSpot()">Another round</button><button class="btn ghost" onclick="App.show(\'home\')">Done for now</button></div>';
+  }
+
+  /* ---- DESTINATIONS ---- */
+  function renderDests(){show("dests");buildDests();}
+  function buildDests(){
+    document.getElementById("destMenu").innerHTML=DESTS.map(d=>{
+      const best=(S.dest[d.id]&&S.dest[d.id].best)||0;
+      return '<div class="card accent-'+d.accent+'" onclick="App.openBrief(\''+d.id+'\')">'+
+        '<span class="ix" style="font-size:22px;top:15px">'+d.flag+'</span>'+
+        '<h2>'+d.country+'</h2><p>'+d.park+'</p>'+
+        '<div class="meta"><span class="tag muted">'+d.brief.length+' note sections · '+d.quiz.length+' questions</span></div>'+
+        '<div class="bar"><i style="width:'+(best/d.quiz.length*100)+'%"></i></div>'+
+        '<div class="meta"><span class="tag muted">'+(best?("best "+best+"/"+d.quiz.length):"not attempted")+'</span></div></div>';
+    }).join("");
+  }
+  function openBrief(id){const d=DESTS.find(x=>x.id===id);show("brief");
+    document.getElementById("briefNav").textContent=d.country;
+    document.getElementById("briefBody").innerHTML=
+      '<div class="brief"><div class="flag">'+d.flag+'</div>'+
+      '<div class="park">'+d.park+' · '+d.coords+'</div><h1>'+d.country+'</h1>'+
+      '<p class="lede">'+d.lede+'</p>'+
+      '<div class="quick">'+Object.entries(d.quick).map(([k,v])=>'<div><span class="k">'+k+'</span><span class="v">'+v+'</span></div>').join("")+'</div></div>'+
+      d.brief.map(sec=>'<div class="sect"><div class="sh">'+sec.h+'</div><ul>'+sec.items.map(it=>'<li>'+it+'</li>').join("")+'</ul></div>').join("")+
+      '<button class="btn water" onclick="App.startDestQuiz(\''+d.id+'\')">Take the '+d.country+' quiz · '+d.quiz.length+' questions</button>'+
+      '<button class="btn ghost" onclick="App.show(\'dests\')">Back to destinations</button>';
+  }
+  let ds=null;
+  function startDestQuiz(id){const d=DESTS.find(x=>x.id===id);ds={d,i:0,score:0,answered:false};show("dquiz");renderD();}
+  function renderD(){
+    if(ds.i>=ds.d.quiz.length)return dResults();
+    ds.answered=false;const q=ds.d.quiz[ds.i];
+    document.getElementById("dProg").style.width=(ds.i/ds.d.quiz.length*100)+"%";
+    document.getElementById("dScore").textContent=ds.score;
+    document.getElementById("dBody").innerHTML=
+      '<div class="tag muted" style="margin-bottom:10px">'+ds.d.flag+' '+ds.d.country+' · Q'+(ds.i+1)+' of '+ds.d.quiz.length+'</div>'+
+      '<div class="q-ask" style="text-align:left">'+q.q+'</div>'+
+      '<div class="opts" id="dopts">'+q.o.map((o,n)=>'<button class="opt" onclick="App.answerD('+n+')"><span class="ic">'+String.fromCharCode(65+n)+'</span>'+o+'</button>').join("")+'</div>'+
+      '<div id="dreveal"></div>';
+  }
+  function answerD(n){
+    if(ds.answered)return;ds.answered=true;const q=ds.d.quiz[ds.i],correct=n===q.a;
+    document.querySelectorAll("#dopts .opt").forEach((b,i)=>{b.disabled=true;
+      if(i===q.a){b.classList.add("correct");if(correct)b.classList.add("pulse");}else if(i===n)b.classList.add("wrong","shake");else b.classList.add("dim");});
+    if(correct)ds.score++;document.getElementById("dScore").textContent=ds.score;
+    document.getElementById("dreveal").innerHTML=
+      '<div class="reveal"><div class="rn '+(correct?"ok":"no")+'">'+(correct?"✓ Correct":"✗ Not quite")+'</div><p class="rf">'+q.e+'</p></div>'+
+      '<button class="btn" onclick="App.nextD()">'+(ds.i+1>=ds.d.quiz.length?"See results":"Next")+'</button>';
+    document.getElementById("dreveal").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+  function nextD(){ds.i++;renderD();}
+  function dResults(){
+    document.getElementById("dProg").style.width="100%";
+    const prev=(S.dest[ds.d.id]&&S.dest[ds.d.id].best)||0;
+    if(ds.score>prev){S.dest[ds.d.id]={best:ds.score};save();}
+    const pct=Math.round(ds.score/ds.d.quiz.length*100);
+    const line=pct===100?"Flawless. You know "+ds.d.country+".":pct>=70?"Solid grasp of "+ds.d.country+".":"A foundation to build on.";
+    document.getElementById("dBody").innerHTML=
+      '<div class="result"><div class="big">'+ds.score+'<span style="font-size:28px;color:var(--muted)">/'+ds.d.quiz.length+'</span></div>'+
+      '<div class="lbl">'+ds.d.country+'</div><h2>'+line+'</h2>'+
+      (ds.score>prev?'<p>New personal best.</p>':'<p>Your best is '+prev+'/'+ds.d.quiz.length+'.</p>')+
+      '<button class="btn water" onclick="App.startDestQuiz(\''+ds.d.id+'\')">Try again</button>'+
+      '<button class="btn ghost" onclick="App.openBrief(\''+ds.d.id+'\')">Re-read the briefing</button>'+
+      '<button class="btn ghost" onclick="App.show(\'dests\')">Other destinations</button></div>';
+  }
+
+  /* ---- misc ---- */
+  function confirmQuit(to){if(confirm("Leave this round? Answered questions are saved."))show(to||"home");}
+  function openName(){document.getElementById("nameModal").classList.add("on");document.getElementById("nameInput").value=S.name||"";setTimeout(()=>document.getElementById("nameInput").focus(),100);}
+  function saveName(){const v=document.getElementById("nameInput").value.trim();S.name=v||null;save();document.getElementById("nameModal").classList.remove("on");renderHome();}
+  function resetAll(){if(confirm("Reset all progress on this device? This can't be undone.")){const nm=S.name;S={name:nm,sr:{},dest:{},factIx:{}};save();renderHome();}}
+
+  renderHome();buildDests();
+  return {show,justPlay,openGuide,renderGuide,setFilter,openDetail,cycleFact,startSpot,answerSpot,nextSpot,
+    renderDests,openBrief,startDestQuiz,answerD,nextD,confirmQuit,openName,saveName,resetAll};
+})();
+document.getElementById("nameInput").addEventListener("keydown",e=>{if(e.key==="Enter")App.saveName();});
+if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+</script>
+</body>
+</html>
